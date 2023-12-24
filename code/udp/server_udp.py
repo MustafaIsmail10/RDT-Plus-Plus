@@ -12,7 +12,7 @@ import os
 ## C -> closes
 
 # reading files from disk to memory
-absolute_path = os.path.abspath('../')
+absolute_path = os.path.abspath("../")
 object_path = "/root/objects"
 files = []
 for i in range(10):
@@ -22,23 +22,23 @@ for i in range(10):
         files.append(f.read())
 
 
-localIP     = "127.0.0.1"
+localIP = "127.0.0.1"
 
-localPort   = 20001
+localPort = 20001
 
-bufferSize  = 1024
+bufferSize = 1024
 
 localIP = "172.17.0.2"
-localPort = 65432
+localPort = 6500
 
-serverAddressPort   = (localIP, localPort)
+serverAddressPort = (localIP, localPort)
 
-msgFromServer       = "Hello UDP Client"
+msgFromServer = "Hello UDP Client"
 
-bytesToSend         = str.encode(msgFromServer)
+bytesToSend = str.encode(msgFromServer)
 
 
-clientIP = '172.17.0.3'
+clientIP = "172.17.0.3"
 clientPort = 49104
 clientAddressPort = (clientIP, clientPort)
 
@@ -51,8 +51,7 @@ s.bind((localIP, localPort))
 print("UDP server up and listening")
 
 # Listen for incoming datagrams
-while(True):
-
+while True:
     # # First receive "Send Files\n\n"
     # data = s.recv(bufferSize)
     # print(f"Received: {data!r}")
@@ -67,13 +66,13 @@ while(True):
     address = bytesAddressPair[1]
 
     clientMsg = "Message from Client:{}".format(message)
-    clientIP  = "Client IP Address:{}".format(address)
-    
+    clientIP = "Client IP Address:{}".format(address)
+
     print(clientMsg)
-    print(clientIP)   
+    print(clientIP)
 
     # Sending a reply to client
     s.sendto(bytesToSend, address)
 
 
-# 
+#

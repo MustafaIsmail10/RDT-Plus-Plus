@@ -18,7 +18,7 @@ HOST = "172.17.0.2"
 PORT = 65432
 
 # reading files from disk to memory
-absolute_path = os.path.abspath('../')
+absolute_path = os.path.abspath("../")
 object_path = "/root/objects"
 # large_files = []
 # small_files = []
@@ -29,17 +29,20 @@ for i in range(10):
     with open(f"{object_path}/small-{i}.obj", "rb") as f:
         files.append(f.read())
 
+
 def print_decoded(data):
-    print(data.decode('utf-8'))
+    print(data.decode("utf-8"))
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
-    conn, addr = s.accept()
     print(f"Server listening on port {PORT}")
-    with conn:
-        print(f"Connected by {addr}")
-        while True:
+
+    while True:
+        conn, addr = s.accept()
+        with conn:
+            print(f"Connected by {addr}")
             data = conn.recv(1024)
             print(f"Received: {data!r}")
             if data == b"Send Files\n\n":
@@ -52,4 +55,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 print("Sending close")
                 conn.sendall("Close\n\n".encode("utf-8"))
                 conn.close()
-                break
