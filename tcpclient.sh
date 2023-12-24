@@ -1,2 +1,2 @@
 cd code/tcp/
-python3 client_tcp.py
+python3 -u client_tcp.py

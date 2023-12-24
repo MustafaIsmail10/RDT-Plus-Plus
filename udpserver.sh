@@ -1,5 +1,5 @@
 cd objects
 ./generateobjects.sh
 cd ../
-cd code/tcp/
-python3 -u server_tcp.py
+cd code/udp/
+python3 server_udp.py

@@ -1,6 +1,16 @@
 """
 TCP Server that sends files to the client
 """
+## Protocol:
+## C -> "Send Files"
+## S -> "num:<number of files>\n\n"
+## Repeat
+##  S -> "size: <file sieze>\n\n"
+##  S -> file\n\n
+
+## S -> "Close\n\n"
+## C -> closes
+
 import socket
 import os
 
@@ -10,16 +20,14 @@ PORT = 65432
 # reading files from disk to memory
 absolute_path = os.path.abspath('../')
 object_path = "/root/objects"
-large_files = []
-small_files = []
+# large_files = []
+# small_files = []
+files = []
 for i in range(10):
     with open(f"{object_path}/large-{i}.obj", "rb") as f:
-        large_files.append(f.read())
+        files.append(f.read())
     with open(f"{object_path}/small-{i}.obj", "rb") as f:
-        small_files.append(f.read())
-
-files = large_files + small_files
-
+        files.append(f.read())
 
 def print_decoded(data):
     print(data.decode('utf-8'))
@@ -28,6 +36,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
     conn, addr = s.accept()
+    print(f"Server listening on port {PORT}")
     with conn:
         print(f"Connected by {addr}")
         while True:
@@ -44,13 +53,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 conn.sendall("Close\n\n".encode("utf-8"))
                 conn.close()
                 break
-
-## Protocol:
-## C -> "Send Files"
-## S -> "num:<number of files>\n\n"
-## Repeat
-##  S -> "size: <file sieze>\n\n"
-##  S -> file\n\n
-
-## S -> "Close\n\n"
-## C -> closes
