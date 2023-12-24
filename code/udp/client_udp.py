@@ -1,11 +1,10 @@
 import socket
-
+from rdt import RDT
+import ast
 
 # setting up the scokcet
-serverIP = "172.17.0.2"
-serverPort = 8022
-serverAddressPort = (serverIP, serverPort)
-bufferSize = 4096
+SERVER_IP = "172.17.0.2"
+SERVER_PORT = 8032
 
 
 # # Create a UDP socket at client side
@@ -43,10 +42,11 @@ bufferSize = 4096
 
 def main():
     sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    sock.sendto(b"type:d\nseq:0\nlength:0\n\n", serverAddressPort)
-    msg, address = sock.recvfrom(bufferSize)
-    print(msg.decode("utf-8"))
-    sock.close()
+    serverAddressPort = (SERVER_IP, SERVER_PORT)
+    client_rdt = RDT(sock, False, serverAddressPort)
+    client_rdt.sendto("Send Files\n\n".encode("utf-8"), serverAddressPort)
+    msg = client_rdt.recv()
+    print(ast.literal_eval(msg[0]).decode("utf-8"))
 
 
 if __name__ == "__main__":

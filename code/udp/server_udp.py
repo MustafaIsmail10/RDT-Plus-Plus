@@ -1,17 +1,14 @@
 import socket
 import os
-import threading
+from rdt import RDT
 
 
 # setting up the scokcet
 localIP = "172.17.0.2"
-localPort = 8022
+localPort = 8032
 serverAddressPort = (localIP, localPort)
-bufferSize = 4096
 
 SEGMENT_SIZE = 2048
-WINDOW_SIZE = 5
-MAX_SEQUENCE_NUMBER = 65535
 
 
 ## Application Layer Protocol:
@@ -38,131 +35,6 @@ for i in range(1):
         files.append(f.read())
     with open(f"{object_path}/small-{i}.obj.md5", "r") as f:
         checksums.append(f.read())
-
-
-class RDTServer:
-    def __init__(self, sock):
-        self.sock = sock
-        self.client_address = None
-
-        self.send_buffer = []
-        self.waiting_for_ack_buffer = {}
-        self.window_size = WINDOW_SIZE
-        self.next_sequence_number = MAX_SEQUENCE_NUMBER
-
-        self.recv_buffer = []
-        self.recv_buffer_lock = threading.Lock()
-        self.recv_mutex = threading.Lock()
-        self.recv_condition = threading.Condition(self.recv_mutex)
-
-        self.send_buffer_lock = threading.Lock()
-        self.waiting_for_ack_buffer_lock = threading.Lock()
-
-        self.sending_mutex = threading.Lock()
-        self.sending_condition = threading.Condition(self.sending_mutex)
-        self.sending_thread = threading.Thread(target=self.sending_thread_func)
-
-        self.receiving_thread = threading.Thread(target=self.receiving_thread_func)
-
-        self.resending_mutex = threading.Lock()
-        self.resending_condition = threading.Condition(self.resending_mutex)
-        self.resending_thead = threading.Thread(target=self.resending_thead_func)
-
-        self.sending_thread.start()
-        self.receiving_thread.start()
-        self.resending_thead.start()
-
-    def send(self, msg):
-        self.sock.sendto(msg.encode("utf-8"), self.client_address)
-
-    def receive(self):
-        data = self.sock.recv(bufferSize)
-        return data.decode("utf-8")
-
-    def sendto(self, msg, address):
-        with self.sending_mutex:
-            self.send_buffer_lock.acquire()
-            self.client_address = address
-            self.send_buffer.append(msg)
-            self.send_buffer_lock.release()
-            self.sending_condition.notify()
-
-    def recv(self):
-        with self.recv_mutex:
-            self.recv_buffer_lock.acquire()
-            while len(self.recv_buffer) == 0:
-                self.recv_buffer_lock.release()
-                print("waiting for message")
-                self.recv_condition.wait()
-                print("received message")
-
-            self.recv_buffer_lock.acquire()
-            message = self.recv_buffer.pop(0)
-            self.recv_buffer_lock.release()
-            return message
-
-    def sending_thread_func(self):
-        with self.sending_mutex:
-            while True:
-                if len(self.waiting_for_ack_buffer.keys()) <= self.window_size:
-                    self.send_buffer_lock.acquire()
-                    self.waiting_for_ack_buffer_lock.acquire()
-                    if len(self.send_buffer) == 0:
-                        self.send_buffer_lock.release()
-                        self.waiting_for_ack_buffer_lock.release()
-                        self.sending_condition.wait()
-                        continue
-                    message = self.send_buffer.pop(0)
-                    self.waiting_for_ack_buffer[self.next_sequence_number] = message
-                    self.next_sequence_number += 1
-                    length = len(message)
-                    segment = f"type:d\nseq:{self.next_sequence_number}\nlength:{length}\n\n{message}"
-                    self.send(segment)
-                    self.send_buffer_lock.release()
-                    self.waiting_for_ack_buffer_lock.release()
-                else:
-                    self.sending_condition.wait()
-
-    def message_parser(self, message):
-        parts = message.split("\n\n")
-        header = parts[0]
-        header_parts = header.split("\n")
-        type = header_parts[0].split(":")[1]
-        seq = int(header_parts[1].split(":")[1])
-        length = int(header_parts[2].split(":")[1])
-        data = parts[1]
-        return type, seq, length, data
-
-    def ack_handler(self, seq):
-        with self.sending_mutex:
-            self.waiting_for_ack_buffer_lock.acquire()
-            self.waiting_for_ack_buffer.pop(seq, None)
-            self.waiting_for_ack_buffer_lock.release()
-            self.sending_condition.notify()
-
-    def receiving_thread_func(self):
-        while True:
-            message, client_address = self.sock.recvfrom(bufferSize)
-            message = message.decode("utf-8")
-            type, seq, length, data = self.message_parser(message)
-            if type == "i":
-                self.client_address = client_address
-            elif type == "a":
-                self.ack_handler(seq)
-            elif type == "d":
-                self.recv_buffer_lock.acquire()
-                self.recv_buffer.append(data)
-                self.recv_buffer_lock.release()
-                print(f"Received segment {seq}")
-                with self.recv_mutex:
-                    self.recv_condition.notify()
-                ack = f"type:a\nseq:{seq}\n\n"
-                self.sendto(ack, client_address)
-
-    def resending_thead_func(self):
-        while True:
-            # resend the segments that have not been acknowledged
-            pass
 
 
 def construct_objects_dic_and_ids():
@@ -233,10 +105,11 @@ def main():
     # Bind to address and ip
     sock.bind(serverAddressPort)
     print(f"RDT server up and listening on port {localPort}")
-    rdt_server = RDTServer(sock)
+    rdt_server = RDT(sock, True)
     while True:
         received_message = rdt_server.recv()
         print(received_message)
+        rdt_server.sendto(received_message[0], received_message[1])
 
 
 if __name__ == "__main__":
