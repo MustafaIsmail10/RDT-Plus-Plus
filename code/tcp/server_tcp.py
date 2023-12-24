@@ -18,7 +18,6 @@ HOST = "172.17.0.2"
 PORT = 65432
 
 # reading files from disk to memory
-absolute_path = os.path.abspath("../")
 object_path = "/root/objects"
 # large_files = []
 # small_files = []

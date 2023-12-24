@@ -1,5 +1,4 @@
 cd objects
 ./generateobjects.sh
-cd ../
-cd code/tcp/
+cd /app/tcp/
 python3 -u server_tcp.py
