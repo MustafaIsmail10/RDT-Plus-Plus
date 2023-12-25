@@ -44,9 +44,20 @@ def main():
     sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     serverAddressPort = (SERVER_IP, SERVER_PORT)
     client_rdt = RDT(sock, False, serverAddressPort)
-    client_rdt.sendto("Send Files\n\n".encode("utf-8"), serverAddressPort)
-    msg = client_rdt.recv()
-    print(ast.literal_eval(msg[0]).decode("utf-8"))
+    conntection_status = client_rdt.initialize_connection()
+    client_rdt.send("This is crazy1", serverAddressPort)
+    client_rdt.send("This is crazy2", serverAddressPort)
+    client_rdt.send("This is crazy3", serverAddressPort)
+    client_rdt.send("This is crazy4", serverAddressPort)
+    client_rdt.send("This is crazy5", serverAddressPort)
+    x = client_rdt.recv()
+    if ast.literal_eval(x[0]).decode("utf-8") == "close":
+        client_rdt.close()
+    print(conntection_status)
+
+    # client_rdt.sendto("Send Files\n\n".encode("utf-8"), serverAddressPort)
+    # msg = client_rdt.recv()
+    # print(ast.literal_eval(msg[0]).decode("utf-8"))
 
 
 if __name__ == "__main__":

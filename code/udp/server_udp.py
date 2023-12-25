@@ -109,7 +109,7 @@ def main():
     while True:
         received_message = rdt_server.recv()
         print(received_message)
-        rdt_server.sendto(received_message[0], received_message[1])
+        rdt_server.send("close".encode("utf-8"), received_message[1])
 
 
 if __name__ == "__main__":
