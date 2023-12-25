@@ -1,6 +1,6 @@
 import socket
 import os
-from rdt import RDT
+from rdt_plus import RDTPlus
 
 
 # setting up the scokcet
@@ -26,7 +26,7 @@ absolute_path = os.path.abspath("../")
 object_path = "/root/objects"
 files = []
 checksums = []
-for i in range(1):
+for i in range(10):
     with open(f"{object_path}/large-{i}.obj", "rb") as f:
         files.append(f.read())
     with open(f"{object_path}/large-{i}.obj.md5", "r") as f:
@@ -105,11 +105,38 @@ def main():
     # Bind to address and ip
     sock.bind(serverAddressPort)
     print(f"RDT server up and listening on port {localPort}")
-    rdt_server = RDT(sock, True)
+    rdt_plus_server = RDTPlus(sock, True)
+    # msgs = []
+    # for file_id in range(len(files)):
+    #     msg = f"size:{len(files[file_id])}\nchecksum:{checksums[file_id]}\n\n" + str(
+    #         files[file_id]
+    #     )
+    #     msg = msg.encode("utf-8")
+    #     msgs.append(msg)
+
+    # rdt_plus_server.send(msgs, serverAddressPort)
+
     while True:
-        received_message = rdt_server.recv()
-        print(received_message)
-        rdt_server.send("close".encode("utf-8"), received_message[1])
+        received_message, address = rdt_plus_server.recv()
+        received_message = received_message.decode("utf-8")
+        if received_message == "send":
+            rdt_plus_server.send([f"num:{len(files)}".encode("utf-8")], address)
+        elif received_message == "get":
+            msgs = []
+            for file_id in range(len(files)):
+                msg = (
+                    f"size:{len(files[file_id])}\nchecksum:{checksums[file_id]}\n\n"
+                    + str(files[file_id])
+                )
+                msg = msg.encode("utf-8")
+                msgs.append(msg)
+
+            rdt_plus_server.send(msgs, address)
+        elif received_message == "ok":
+            print("All files sent")
+            rdt_plus_server.send(["close".encode("utf-8")], address)
+
+            rdt_plus_server.cleanup_server()
 
 
 if __name__ == "__main__":

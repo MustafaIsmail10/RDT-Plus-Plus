@@ -1,5 +1,5 @@
 import socket
-from rdt import RDT
+from rdt_plus import RDTPlus
 import ast
 
 # setting up the scokcet
@@ -43,17 +43,33 @@ SERVER_PORT = 8032
 def main():
     sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     serverAddressPort = (SERVER_IP, SERVER_PORT)
-    client_rdt = RDT(sock, False, serverAddressPort)
-    conntection_status = client_rdt.initialize_connection()
-    client_rdt.send("This is crazy1", serverAddressPort)
-    client_rdt.send("This is crazy2", serverAddressPort)
-    client_rdt.send("This is crazy3", serverAddressPort)
-    client_rdt.send("This is crazy4", serverAddressPort)
-    client_rdt.send("This is crazy5", serverAddressPort)
-    x = client_rdt.recv()
-    if ast.literal_eval(x[0]).decode("utf-8") == "close":
+    client_rdt = RDTPlus(sock, False, serverAddressPort)
+    client_rdt.send(["send".encode("utf-8")], serverAddressPort)
+    msg, address = client_rdt.recv()
+    msg = msg.decode("utf-8")
+    num = int(msg.split(":")[1])
+    client_rdt.send(["get".encode("utf-8")], serverAddressPort)
+    for i in range(num):
+        msg, address = client_rdt.recv()
+        msg = msg.decode("utf-8")
+        headers, file = msg.split("\n\n")
+        file = ast.literal_eval(file)
+        size = int(headers.split("\n")[0].split(":")[1])
+        checksum = headers.split("\n")[1].split(":")[1]
+        print("file with size:{size} is received".format(size=size))
+
+    print("All files received")
+    client_rdt.send(["ok".encode("utf-8")], serverAddressPort)
+
+    msg, address = client_rdt.recv()
+    msg = msg.decode("utf-8")
+    if msg == "close":
         client_rdt.close()
-    print(conntection_status)
+
+    # x = client_rdt.recv()
+    # if ast.literal_eval(x[0]).decode("utf-8") == "close":
+    #     client_rdt.close()
+    # print(conntection_status)
 
     # client_rdt.sendto("Send Files\n\n".encode("utf-8"), serverAddressPort)
     # msg = client_rdt.recv()

@@ -1,6 +1,6 @@
 import threading
 import socket
-
+import ast
 
 BUFFER_SIZE = 4096
 WINDOW_SIZE = 5
@@ -91,7 +91,6 @@ class RDT:
                             self.sending_condition.wait()
                             continue
                         else:
-                            print("Sending Thread is dead")
                             return
 
                     # Locks are acquired
@@ -116,7 +115,6 @@ class RDT:
                     self.sending_condition.wait()
 
     def resend(self, id):
-        print(f"Resending segment {id}")
         with self.mutex:
             segment = self.waiting_for_ack_buffer[id]
             self._send(segment, self.address)
@@ -161,7 +159,6 @@ class RDT:
                 with self.mutex:
                     self.ack_handler(id)
                     self.sending_condition.notify()
-                    print(f"Received ack {id}")
 
                     if (
                         not self.is_server
@@ -183,11 +180,9 @@ class RDT:
             elif type == "d":
                 with self.mutex:
                     self.recv_buffer.append((data, client_address))
-                    print(f"Received segment {id}")
                     self.recv_condition.notify()
                     ack = f"type:a\nid:{id}\nlength:0\n\n"
                     self._send(ack, self.address)
-                    print(f"Sent ack {id}")
 
             elif type == "c":
                 with self.mutex:
@@ -220,7 +215,6 @@ class RDT:
             self.sending_condition.notify()
 
             self.close_condition.wait()
-            print("Closing is awake atfter sending is dead")
             id = self.id
             msg = f"type:c\nid:{id}\nlength:0\n\n"
 
@@ -238,8 +232,6 @@ class RDT:
             self.is_close_sent = True
 
             self.close_condition.wait()
-
-            print("Reciever  is dead.")
 
     def _send(self, msg, address):
         """
@@ -263,6 +255,17 @@ class RDT:
             else:
                 return False
 
+    def send_many(self, msgs, address):
+        with self.mutex:
+            if not self.close_flag:
+                self.address = address
+                for msg in msgs:
+                    self.send_buffer.append(msg)
+                self.sending_condition.notify()
+                return True
+            else:
+                return False
+
     def recv(self):
         """
         This function is called by the upper layer to receive data from the
@@ -270,10 +273,9 @@ class RDT:
         """
         with self.mutex:
             while len(self.recv_buffer) == 0:
-                print("waiting for requests")
                 self.recv_condition.wait()
-                print("received requests")
             message, address = self.recv_buffer.pop(0)
+            message = ast.literal_eval(message)
             return message, address
 
     def message_parser(self, message):
