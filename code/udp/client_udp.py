@@ -1,6 +1,7 @@
 import socket
 from rdt_plus import RDTPlus
 import ast
+import hashlib
 
 # setting up the scokcet
 SERVER_IP = "172.17.0.2"
@@ -56,7 +57,13 @@ def main():
         file = ast.literal_eval(file)
         size = int(headers.split("\n")[0].split(":")[1])
         checksum = headers.split("\n")[1].split(":")[1]
-        print("file with size:{size} is received".format(size=size))
+        hash_function = hashlib.md5()
+        hash_function.update(file)
+        computed_checksum = hash_function.hexdigest()
+        if computed_checksum != checksum:
+            print("checksums are not equal")
+        else:
+            print("file with size:{size} is received".format(size=size))
 
     print("All files received")
     client_rdt.send(["ok".encode("utf-8")], serverAddressPort)

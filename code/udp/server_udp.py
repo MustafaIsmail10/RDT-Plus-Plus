@@ -1,7 +1,7 @@
 import socket
 import os
 from rdt_plus import RDTPlus
-
+import hashlib
 
 # setting up the scokcet
 localIP = "172.17.0.2"
@@ -28,9 +28,17 @@ files = []
 checksums = []
 for i in range(10):
     with open(f"{object_path}/large-{i}.obj", "rb") as f:
-        files.append(f.read())
+        data = f.read()
+        hash_md5 = hashlib.md5()
+        hash_md5.update(data)
+        hash_value = hash_md5.hexdigest()
+        print(f"hash value of file {i} is {hash_value}")
+        files.append(data)
+
     with open(f"{object_path}/large-{i}.obj.md5", "r") as f:
-        checksums.append(f.read())
+        data = f.read()
+        print("The read checksum is: ", data)
+        checksums.append(data)
     with open(f"{object_path}/small-{i}.obj", "rb") as f:
         files.append(f.read())
     with open(f"{object_path}/small-{i}.obj.md5", "r") as f:
