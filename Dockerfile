@@ -7,10 +7,14 @@ RUN \
   apt-get install -y software-properties-common && \
   apt-get install -y byobu curl git htop man unzip vim wget && \
   apt-get install -y python3 && \
+  apt-get install -y python3-pip && \
+  apt-get install -y libatlas-base-dev gfortran && \
   apt-get install -y net-tools && \
   apt-get install -y inetutils-ping && \
   apt-get install -y iproute2 && \
-  rm -rf /var/lib/apt/lists/*
+  apt-get install -y dnsutils && \
+  rm -rf /var/lib/apt/lists/* && \
+  pip3 install scipy
 
 ENV HOME /root
 
@@ -20,5 +24,3 @@ COPY . .
 RUN chmod +x /root/objects/generateobjects.sh
 
 CMD ["bash"]
-
-
