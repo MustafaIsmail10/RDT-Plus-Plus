@@ -205,7 +205,10 @@ class RDT:
             self.close_flag = True
             self.sending_condition.notify()
             self.close_condition.wait()
-
+            
+            if len(self.timers.keys()) != 0:
+                self.close_condition.wait()
+                
             ack = f"type:a\nseq:{id}\nlength:0\n\n"
             self._send(ack, self.address)
 

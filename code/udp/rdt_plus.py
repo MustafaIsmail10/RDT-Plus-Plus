@@ -94,6 +94,8 @@ class RDTPlus:
             if obj_id in self.completed_objects_ids:
                 continue
             elif obj_id in self.recv_objects_ids:
+                if segment_id in [x[0] for x in self.recv_objects[obj_id][0]]:
+                    continue
                 self.recv_objects[obj_id][0].append((segment_id, body))
                 self.recv_objects[obj_id][3] += 1
 
