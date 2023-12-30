@@ -14,7 +14,8 @@ RUN \
   apt-get install -y iproute2 && \
   apt-get install -y dnsutils && \
   rm -rf /var/lib/apt/lists/* && \
-  pip3 install scipy
+  pip install scipy \
+  pip install matplotlib
 
 ENV HOME /root
 
