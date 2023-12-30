@@ -22,3 +22,7 @@ duplicate_10 TCP Mean: 26.393425329526266
 duplicate_10 TCP Confidence interval: (23.564511880743943, 29.22233877830859)
 duplicate_10 UDP Mean: 1.576881464322408
 duplicate_10 UDP Confidence interval: (1.5244949944094048, 1.6292679342354113)
+delay_100_uniform TCP Mean: 27.127595774332683
+delay_100_uniform TCP Confidence interval: (25.957748623946397, 28.29744292471897)
+delay_100_uniform UDP Mean: 169.52524673144023
+delay_100_uniform UDP Confidence interval: (169.45373219793782, 169.59676126494264)
