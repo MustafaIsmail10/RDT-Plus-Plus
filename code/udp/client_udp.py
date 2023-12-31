@@ -61,7 +61,7 @@ def main():
         hash_function.update(file)
         computed_checksum = hash_function.hexdigest()
         if computed_checksum != checksum:
-            print("checksums are not equal")
+            print("files checksums are not equal")
         else:
             print("file with size:{size} is received".format(size=size))
 
