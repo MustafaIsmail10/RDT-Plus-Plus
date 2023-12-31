@@ -1,3 +1,12 @@
+"""
+This module implements RDT+ protocol. It is using RDT protocol as a base.
+RDT+ protocol is used to send multiple objects over the network.
+
+It receives a list of objects, split them into segments, interleave them and send them over the network.
+
+It also receives segments, reorder them and construct the original object.
+"""
+
 from rdt import RDT
 import ast
 
@@ -5,7 +14,26 @@ MAX_SEGMENT_SIZE = 2048
 
 
 class RDTPlus:
+    """
+    This class implements RDT+ protocol. It is using RDT protocol as a base.
+    RDT+ protocol is used to send multiple objects over the network.
+
+    It implements invervalve and reordering of segments.
+    """
+
     def __init__(self, sock, is_server=True, server_address_port=None):
+        """
+        This method initializes RDT+ protocol.
+        It receives a socket, is_server flag and server_address_port.
+        If is_server is True, server_address_port should be None.
+        If is_server is False, server_address_port should be the address of the server.
+
+        It initializes the send_obj_id, recv_objects and recv_objects_ids attributes.
+        The send_obj_id is used to identify the objects that are sent or received.
+        The recv_objects is a dictionary that contains the objects that are received.
+        The recv_objects_ids is a list of the ids of the objects that are received.
+        The completed_objects_ids is a list of the ids of the objects that are completed.
+        """
         self.rdt = RDT(sock, is_server, server_address_port)
         if not is_server:
             if server_address_port is None:
@@ -17,6 +45,11 @@ class RDTPlus:
         self.completed_objects_ids = []
 
     def send(self, msgs: list, address_port):
+        """
+        This method sends a list of objects over the network.
+        It receives a list of objects and the address of the receiver.
+        It splits the objects into segments, interleave them and send them over the network.
+        """
         send_objects_dic = {}
         for msg in msgs:
             if msg is None:
@@ -35,6 +68,11 @@ class RDTPlus:
         self.rdt.send_many(messages, address_port)
 
     def _split_msg(self, msg):
+        """
+        This method splits a message into segments.
+        It receives a message and split it into segments.
+        It returns a list of segments.
+        """
         segments = []
         while msg:
             segments.append(msg[:MAX_SEGMENT_SIZE])
@@ -42,6 +80,11 @@ class RDTPlus:
         return segments
 
     def _construct_messages(self, objects_dic):
+        """
+        This method constructs messages from segmented objects.
+        It receives a dictionary of objects.
+        It returns a list of messages that are constructed from interleved segments of objects.
+        """
         messages = []
         is_still_remaning_segments_to_send = True
         while is_still_remaning_segments_to_send:
@@ -66,6 +109,9 @@ class RDTPlus:
         return messages
 
     def _parse_msg(self, msg):
+        """
+        This method parses a message.
+        """
         msg = msg.split("\n\n")
         header = msg[0].split("\n")
         body = msg[1]
@@ -76,6 +122,11 @@ class RDTPlus:
         return obj_id, segments_num, segment_id, body
 
     def _construct_object(self, obj_id):
+        """
+        This method constructs an object from segments.
+        It receives an object id and construct the object from segments.
+        It returns the object.
+        """
         segments, segments_num, address, segments_recv = self.recv_objects[obj_id]
         object = ""
         ## order segments
@@ -86,6 +137,13 @@ class RDTPlus:
         return object
 
     def recv(self):
+        """
+        This method receives a list of objects over the network.
+
+        It stores the objects in recv_objects dictionary.
+
+        If an object is completed, it constructs the object and return it along with the sender address.
+        """
         while True:
             msg, address = self.rdt.recv()
             msg = msg.decode("utf-8")
@@ -117,9 +175,15 @@ class RDTPlus:
                 return object, address
 
     def close(self):
+        """
+        This method closes the connection.
+        """
         self.rdt.close()
 
     def cleanup_server(self):
+        """
+        This method cleans up the server. It should be called after the server is closed.
+        """
         self.send_obj_id = 0
         self.recv_objects = {}
         self.recv_objects_ids = []

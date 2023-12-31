@@ -1,3 +1,21 @@
+"""
+This is the client code for the sending files application.
+
+It uses RDTPlus class to send and receive files over the network.
+
+Application Layer Protocol:
+C -> "send"
+S -> "num:<number of files>"
+C -> "get"
+Repeat for each file:
+    S -> "size: <file sieze>\n\n"
+    S -> file\n\n
+C -> "ok"
+S -> "close"
+C -> closes
+"""
+
+
 import socket
 from rdt_plus import RDTPlus
 import ast
@@ -8,40 +26,17 @@ SERVER_IP = "172.17.0.2"
 SERVER_PORT = 8032
 
 
-# # Create a UDP socket at client side
-# sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
-
-# msgFromClient = "Send Files"
-
-# bytesToSend = str.encode(msgFromClient)
-
-# # Send to server using created UDP socket
-# sock.sendto(bytesToSend, serverAddressPort)
-
-# # Send starting message: "Send Files\n\n"
-# # s.sendto(b"Send Files\n\n", serverAddressPort)
-# # print("Sent starting message")
-
-# while True:
-#     msgFromServer = sock.recvfrom(bufferSize)
-
-#     msgFromServer = msgFromServer[0].decode("utf-8")
-#     print(msgFromServer)
-#     if msgFromServer == "close":
-#         print("We should stopped receiving files")
-#         break
-
-# data = s.recv(bufferSize)
-# print(f"Received: {data!r}")
-
-
-# msg = "Message from Server {}".format(msgFromServer[0])
-
-# print(msg)
-
-
 def main():
+    """
+    This is the main function of the client.
+    It creates a socket.
+    It uses RDTPlus class to send and receive files over the network.
+
+    It sends "send" to the server and waits for the number of files.
+    It sends "get" to the server and waits for the files.
+    It sends "ok" to the server and waits for the server to close.
+    It closes the connection.
+    """
     sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     serverAddressPort = (SERVER_IP, SERVER_PORT)
     client_rdt = RDTPlus(sock, False, serverAddressPort)
@@ -51,6 +46,9 @@ def main():
     num = int(msg.split(":")[1])
     client_rdt.send(["get".encode("utf-8")], serverAddressPort)
     for i in range(num):
+        """
+        This loop receives the files from the server.
+        """
         msg, address = client_rdt.recv()
         msg = msg.decode("utf-8")
         headers, file = msg.split("\n\n")
@@ -61,7 +59,7 @@ def main():
         hash_function.update(file)
         computed_checksum = hash_function.hexdigest()
         if computed_checksum != checksum:
-            print("checksums are not equal")
+            print("files checksums are not equal")
         else:
             print("file with size:{size} is received".format(size=size))
 
@@ -72,15 +70,6 @@ def main():
     msg = msg.decode("utf-8")
     if msg == "close":
         client_rdt.close()
-
-    # x = client_rdt.recv()
-    # if ast.literal_eval(x[0]).decode("utf-8") == "close":
-    #     client_rdt.close()
-    # print(conntection_status)
-
-    # client_rdt.sendto("Send Files\n\n".encode("utf-8"), serverAddressPort)
-    # msg = client_rdt.recv()
-    # print(ast.literal_eval(msg[0]).decode("utf-8"))
 
 
 if __name__ == "__main__":
