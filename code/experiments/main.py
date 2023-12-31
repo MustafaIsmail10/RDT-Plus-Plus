@@ -71,7 +71,8 @@ def log_stats(udp_times, tcp_times):
 
     with open('stats.csv', 'a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([PARAM, mean_tcp, ci_tcp, mean_udp, ci_udp])
+        # writer.writerow([PARAM, mean_tcp, ci_tcp, mean_udp, ci_udp])
+        writer.writerow([PARAM, f"{mean_tcp:.2f}", f"({ci_tcp[0]:.2f}, {ci_tcp[1]:.2f})", f"{mean_udp:.2f}", f"({ci_udp[0]:.2f}, {ci_udp[1]:.2f})"])
     
     
 
@@ -80,17 +81,20 @@ tcp_times = []
 udp_times = []
 for i in range(1, RUNS + 1):
     print(f"Run {PARAM} {i}")
-    start = time.time()
-    tcp_client.main()
-    end = time.time()
-    print(f"TCP time {PARAM} {i}: {end - start}")
-    tcp_times.append(end - start)
-
+    
+    # UDP
     start = time.time()
     udp_client.main()
     end = time.time()
     print(f"UDP time {PARAM} {i}: {end - start}")
     udp_times.append(end - start)
+
+    # TCP
+    start = time.time()
+    tcp_client.main()
+    end = time.time()
+    print(f"TCP time {PARAM} {i}: {end - start}")
+    tcp_times.append(end - start)
 
 # log_stats(tcp_times, "TCP")
 # log_stats(udp_times, "UDP")
