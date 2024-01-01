@@ -78,37 +78,37 @@ if len(udp_times) == RUNS and len(tcp_times) == RUNS:
     print("Already ran.")
     sys.exit(0)
 
-# if len(udp_times) < RUNS:
-#     print("Running UDP...")
-#     udp_times = []
-#     for i in range(1, RUNS + 1):
-#         print(f"Run {PARAM} {i}")
-        
-#         # UDP
-#         start = time.time()
-#         udp_client.main()
-#         end = time.time()
-#         print(f"UDP time {PARAM} {i}: {end - start}")
-#         udp_times.append(end - start)
-        
-#     with open(f'lists/udp_times_{PARAM}.pkl', 'wb') as f:
-#         pickle.dump(udp_times, f)
-
-if len(tcp_times) < RUNS:
-    print("Running TCP...")
-    tcp_times = []
+if len(udp_times) < RUNS:
+    print("Running UDP...")
+    udp_times = []
     for i in range(1, RUNS + 1):
-        # TCP
-        start = time.time()
-        tcp_client.main()
-        end = time.time()
-        print(f"TCP time {PARAM} {i}: {end - start}")
-        tcp_times.append(end - start)
+        print(f"Run {PARAM} {i}")
         
-    with open(f'lists/tcp_times_{PARAM}.pkl', 'wb') as f:
-        pickle.dump(tcp_times, f)
+        # UDP
+        start = time.time()
+        udp_client.main()
+        end = time.time()
+        print(f"UDP time {PARAM} {i}: {end - start}")
+        udp_times.append(end - start)
+        
+    with open(f'lists/udp_times_{PARAM}.pkl', 'wb') as f:
+        pickle.dump(udp_times, f)
 
-'''
+# if len(tcp_times) < RUNS:
+#     print("Running TCP...")
+#     tcp_times = []
+#     for i in range(1, RUNS + 1):
+#         # TCP
+#         start = time.time()
+#         tcp_client.main()
+#         end = time.time()
+#         print(f"TCP time {PARAM} {i}: {end - start}")
+#         tcp_times.append(end - start)
+        
+#     with open(f'lists/tcp_times_{PARAM}.pkl', 'wb') as f:
+#         pickle.dump(tcp_times, f)
+
+
 print("Logging...")
 log_stats(udp_times, tcp_times)
 
@@ -147,7 +147,6 @@ plt.ylabel("Time")
 plt.legend()
 plt.title("TCP and UDP Times with Means")
 plt.savefig(f"graphs2/time_run_mean_{PARAM}.png")
-'''
 
 '''
 # def run_udp(i):
