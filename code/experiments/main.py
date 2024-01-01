@@ -58,19 +58,17 @@ def log_stats(udp_times, tcp_times):
 
     with open('stats.csv', 'a', newline='') as file:
         writer = csv.writer(file)
-        # writer.writerow([PARAM, mean_tcp, ci_tcp, mean_udp, ci_udp])
         writer.writerow([PARAM, f"{mean_tcp:.2f}", f"({ci_tcp[0]:.2f}, {ci_tcp[1]:.2f})", f"{mean_udp:.2f}", f"({ci_udp[0]:.2f}, {ci_udp[1]:.2f})"])
-    
-# tcp_times = []
-# udp_times = []
 
-if os.path.exists(f'udp_times_{PARAM}.pkl'):
+if os.path.exists(f'lists/udp_times_{PARAM}.pkl'):
+    print("Loading udp times")
     with open(f'lists/udp_times_{PARAM}.pkl', 'rb') as f:
         udp_times = pickle.load(f)
 else:
     udp_times = []
 
-if os.path.exists(f'tcp_times_{PARAM}.pkl'):
+if os.path.exists(f'lists/tcp_times_{PARAM}.pkl'):
+    print("Loading tcp times")
     with open(f'lists/tcp_times_{PARAM}.pkl', 'rb') as f:
         tcp_times = pickle.load(f)
 else:
@@ -80,22 +78,24 @@ if len(udp_times) == RUNS and len(tcp_times) == RUNS:
     print("Already ran.")
     sys.exit(0)
 
-if len(udp_times) < RUNS:
-    udp_times = []
-    for i in range(1, RUNS + 1):
-        print(f"Run {PARAM} {i}")
+# if len(udp_times) < RUNS:
+#     print("Running UDP...")
+#     udp_times = []
+#     for i in range(1, RUNS + 1):
+#         print(f"Run {PARAM} {i}")
         
-        # UDP
-        start = time.time()
-        udp_client.main()
-        end = time.time()
-        print(f"UDP time {PARAM} {i}: {end - start}")
-        udp_times.append(end - start)
+#         # UDP
+#         start = time.time()
+#         udp_client.main()
+#         end = time.time()
+#         print(f"UDP time {PARAM} {i}: {end - start}")
+#         udp_times.append(end - start)
         
-    with open(f'lists/udp_times_{PARAM}.pkl', 'wb') as f:
-        pickle.dump(udp_times, f)
+#     with open(f'lists/udp_times_{PARAM}.pkl', 'wb') as f:
+#         pickle.dump(udp_times, f)
 
 if len(tcp_times) < RUNS:
+    print("Running TCP...")
     tcp_times = []
     for i in range(1, RUNS + 1):
         # TCP
@@ -108,9 +108,8 @@ if len(tcp_times) < RUNS:
     with open(f'lists/tcp_times_{PARAM}.pkl', 'wb') as f:
         pickle.dump(tcp_times, f)
 
-# print("Logging...")
-# log_stats(tcp_times, "TCP")
-# log_stats(udp_times, "UDP")
+'''
+print("Logging...")
 log_stats(udp_times, tcp_times)
 
 # Plot the graph (ORIGINAL)
@@ -148,7 +147,7 @@ plt.ylabel("Time")
 plt.legend()
 plt.title("TCP and UDP Times with Means")
 plt.savefig(f"graphs2/time_run_mean_{PARAM}.png")
-
+'''
 
 '''
 # def run_udp(i):
