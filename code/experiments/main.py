@@ -141,7 +141,7 @@ plt.axhline(y=udp_mean, color='red', linestyle='--', label="UDP Mean")
 plt.xticks(range(1, len(tcp_times) + 1))
 y_min = min(min(tcp_times), min(udp_times))  # minimum y value
 y_max = max(max(tcp_times), max(udp_times))  # maximum y value
-plt.yticks(np.arange(y_min, y_max, 50))
+plt.yticks(np.arange(y_min, y_max, 5))
 plt.xlabel("Run Number")
 plt.ylabel("Time")
 plt.legend()

@@ -10,7 +10,7 @@ It also receives segments, reorder them and construct the original object.
 from rdt import RDT
 import ast
 
-MAX_SEGMENT_SIZE = 2048
+MAX_SEGMENT_SIZE = 1024
 
 
 class RDTPlus:

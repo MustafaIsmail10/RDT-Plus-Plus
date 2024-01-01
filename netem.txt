@@ -16,5 +16,5 @@ tc qdisc add dev eth0 root netem corrupt 5%
 tc qdisc add dev eth0 root netem corrupt 10%
 
 tc qdisc add dev eth0 root netem delay 100ms
-tc qdisc add dev eth0 root netem delay 100ms 20ms distribution normal
+tc qdisc add dev eth0 root netem delay 100ms 10ms distribution normal
 
