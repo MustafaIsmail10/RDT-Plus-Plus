@@ -20,6 +20,8 @@ import os
 import numpy as np
 import sys
 import csv
+import threading
+import pickle
 
 
 PARAM = str(sys.argv[1]).replace(" ", "_").replace("%", "")
@@ -28,21 +30,6 @@ if len(sys.argv) > 2:
     RUNS = int(sys.argv[2])
 else:
     RUNS = 30
-
-# def log_stats(times_list, protocol):
-#     confidence = 0.95
-#     mean = sum(times_list) / len(times_list)
-#     std_err = scipy.stats.sem(times_list)
-#     ci = scipy.stats.t.interval(
-#         confidence, len(times_list) - 1, loc=mean, scale=std_err
-#     )
-#     print(f"Mean: {mean}")
-#     print(f"Confidence interval: {ci}")
-
-#     # Append the stats to the file
-#     with open("stats.txt", "a") as f:
-#         f.write(f"{PARAM} {protocol} Mean: {mean}\n")
-#         f.write(f"{PARAM} {protocol} Confidence interval: {ci}\n")
 
 def log_stats(udp_times, tcp_times):
     confidence = 0.95
@@ -74,28 +61,54 @@ def log_stats(udp_times, tcp_times):
         # writer.writerow([PARAM, mean_tcp, ci_tcp, mean_udp, ci_udp])
         writer.writerow([PARAM, f"{mean_tcp:.2f}", f"({ci_tcp[0]:.2f}, {ci_tcp[1]:.2f})", f"{mean_udp:.2f}", f"({ci_udp[0]:.2f}, {ci_udp[1]:.2f})"])
     
-    
+# tcp_times = []
+# udp_times = []
 
+if os.path.exists(f'udp_times_{PARAM}.pkl'):
+    with open(f'lists/udp_times_{PARAM}.pkl', 'rb') as f:
+        udp_times = pickle.load(f)
+else:
+    udp_times = []
 
-tcp_times = []
-udp_times = []
-for i in range(1, RUNS + 1):
-    print(f"Run {PARAM} {i}")
-    
-    # UDP
-    start = time.time()
-    udp_client.main()
-    end = time.time()
-    print(f"UDP time {PARAM} {i}: {end - start}")
-    udp_times.append(end - start)
+if os.path.exists(f'tcp_times_{PARAM}.pkl'):
+    with open(f'lists/tcp_times_{PARAM}.pkl', 'rb') as f:
+        tcp_times = pickle.load(f)
+else:
+    tcp_times = []
 
-    # TCP
-    start = time.time()
-    tcp_client.main()
-    end = time.time()
-    print(f"TCP time {PARAM} {i}: {end - start}")
-    tcp_times.append(end - start)
+if len(udp_times) == RUNS and len(tcp_times) == RUNS:
+    print("Already ran.")
+    sys.exit(0)
 
+if len(udp_times) < RUNS:
+    udp_times = []
+    for i in range(1, RUNS + 1):
+        print(f"Run {PARAM} {i}")
+        
+        # UDP
+        start = time.time()
+        udp_client.main()
+        end = time.time()
+        print(f"UDP time {PARAM} {i}: {end - start}")
+        udp_times.append(end - start)
+        
+    with open(f'lists/udp_times_{PARAM}.pkl', 'wb') as f:
+        pickle.dump(udp_times, f)
+
+if len(tcp_times) < RUNS:
+    tcp_times = []
+    for i in range(1, RUNS + 1):
+        # TCP
+        start = time.time()
+        tcp_client.main()
+        end = time.time()
+        print(f"TCP time {PARAM} {i}: {end - start}")
+        tcp_times.append(end - start)
+        
+    with open(f'lists/tcp_times_{PARAM}.pkl', 'wb') as f:
+        pickle.dump(tcp_times, f)
+
+# print("Logging...")
 # log_stats(tcp_times, "TCP")
 # log_stats(udp_times, "UDP")
 log_stats(udp_times, tcp_times)
@@ -129,9 +142,41 @@ plt.axhline(y=udp_mean, color='red', linestyle='--', label="UDP Mean")
 plt.xticks(range(1, len(tcp_times) + 1))
 y_min = min(min(tcp_times), min(udp_times))  # minimum y value
 y_max = max(max(tcp_times), max(udp_times))  # maximum y value
-plt.yticks(np.arange(y_min, y_max, 5))
+plt.yticks(np.arange(y_min, y_max, 10))
 plt.xlabel("Run Number")
 plt.ylabel("Time")
 plt.legend()
 plt.title("TCP and UDP Times with Means")
 plt.savefig(f"graphs2/time_run_mean_{PARAM}.png")
+
+
+'''
+# def run_udp(i):
+#     start = time.time()
+#     udp_client.main()
+#     end = time.time()
+#     print(f"UDP time {PARAM} {i}: {end - start}")
+#     udp_times.append(end - start)
+
+# def run_tcp(i):
+#     start = time.time()
+#     tcp_client.main()
+#     end = time.time()
+#     print(f"TCP time {PARAM} {i}: {end - start}")
+#     tcp_times.append(end - start)
+
+# for i in range(1, RUNS + 1):
+#     print(f"Run {PARAM} {i}")
+    
+#     # UDP
+#     udp_thread = threading.Thread(target=run_udp, args=(i,))
+#     udp_thread.start()
+
+#     # TCP
+#     tcp_thread = threading.Thread(target=run_tcp, args=(i,))
+#     tcp_thread.start()
+
+#     # Wait for both threads to finish
+#     udp_thread.join()
+#     tcp_thread.join()
+'''
