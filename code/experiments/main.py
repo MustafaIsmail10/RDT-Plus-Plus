@@ -74,25 +74,25 @@ if os.path.exists(f'lists/tcp_times_{PARAM}.pkl'):
 else:
     tcp_times = []
 
-if len(udp_times) == RUNS and len(tcp_times) == RUNS:
-    print("Already ran.")
-    sys.exit(0)
+# if len(udp_times) == RUNS and len(tcp_times) == RUNS:
+#     print("Already ran.")
+#     sys.exit(0)
 
-if len(udp_times) < RUNS:
-    print("Running UDP...")
-    udp_times = []
-    for i in range(1, RUNS + 1):
-        print(f"Run {PARAM} {i}")
+# if len(udp_times) < RUNS:
+#     print("Running UDP...")
+#     udp_times = []
+#     for i in range(1, RUNS + 1):
+#         print(f"Run {PARAM} {i}")
         
-        # UDP
-        start = time.time()
-        udp_client.main()
-        end = time.time()
-        print(f"UDP time {PARAM} {i}: {end - start}")
-        udp_times.append(end - start)
+#         # UDP
+#         start = time.time()
+#         udp_client.main()
+#         end = time.time()
+#         print(f"UDP time {PARAM} {i}: {end - start}")
+#         udp_times.append(end - start)
         
-    with open(f'lists/udp_times_{PARAM}.pkl', 'wb') as f:
-        pickle.dump(udp_times, f)
+#     with open(f'lists/udp_times_{PARAM}.pkl', 'wb') as f:
+#         pickle.dump(udp_times, f)
 
 # if len(tcp_times) < RUNS:
 #     print("Running TCP...")
@@ -141,7 +141,7 @@ plt.axhline(y=udp_mean, color='red', linestyle='--', label="UDP Mean")
 plt.xticks(range(1, len(tcp_times) + 1))
 y_min = min(min(tcp_times), min(udp_times))  # minimum y value
 y_max = max(max(tcp_times), max(udp_times))  # maximum y value
-plt.yticks(np.arange(y_min, y_max, 10))
+plt.yticks(np.arange(y_min, y_max, 50))
 plt.xlabel("Run Number")
 plt.ylabel("Time")
 plt.legend()
