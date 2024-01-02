@@ -1,7 +1,7 @@
 """
 TCP Server that sends files to the client
 """
-## Protocol:
+## This is our protocol for TCP communication between client and server:
 ## C -> "Send Files"
 ## S -> "num:<number of files>\n\n"
 ## Repeat
@@ -19,8 +19,6 @@ PORT = 65432
 
 # reading files from disk to memory
 object_path = "/root/objects"
-# large_files = []
-# small_files = []
 files = []
 for i in range(10):
     with open(f"{object_path}/large-{i}.obj", "rb") as f:
@@ -29,8 +27,8 @@ for i in range(10):
         files.append(f.read())
 
 
-def print_decoded(data):
-    print(data.decode("utf-8"))
+# def print_decoded(data):
+#     print(data.decode("utf-8"))
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
