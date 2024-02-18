@@ -1,3 +1,8 @@
+# RDT++
+
+It is a reliable data transfer protocol build on top of UDP. It solves features missing from TCP such as head of line blocking. It is a 2 layer protocol. Check `report.pdf` for th details
+
+## Run
 
 Install docker and VSCode on your sytstem
 
